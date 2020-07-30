@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.10 )
 
-project( simulation_setup )
+project( Dynamics_Rayleigh_Ritz )
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,6 +26,11 @@ set(ALL_LIBS
   ${ARMADILLO_LIBRARIES} ${Boost_LIBRARIES})
 
 set(SOURCES
+  ./src/rayleigh_ritz_beam.cpp
+  ./src/euler_rotations.cpp
+  ./src/dynamics_math.cpp
+  ./src/modes_magnitude.cpp
+
     )
 
   

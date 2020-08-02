@@ -30,7 +30,6 @@ set(SOURCES
   ./src/euler_rotations.cpp
   ./src/dynamics_math.cpp
   ./src/modes_magnitude.cpp
-
     )
 
   

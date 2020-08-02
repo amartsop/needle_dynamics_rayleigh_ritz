@@ -3,10 +3,12 @@
 
 CMakeFiles/main.dir/main.cpp.o
  .././include/dynamics_math.h
+ .././include/euler_rotations.h
  .././include/gnuplot-iostream.h
  .././include/modes_magnitude.h
  .././include/needle_properties.hpp
  .././include/rayleigh_ritz_beam.h
+ .././include/state.h
  /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/main.cpp
 CMakeFiles/main.dir/src/dynamics_math.cpp.o
  .././include/dynamics_math.h
@@ -19,7 +21,9 @@ CMakeFiles/main.dir/src/modes_magnitude.cpp.o
  /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/src/modes_magnitude.cpp
 CMakeFiles/main.dir/src/rayleigh_ritz_beam.cpp.o
  .././include/dynamics_math.h
+ .././include/euler_rotations.h
  .././include/modes_magnitude.h
  .././include/needle_properties.hpp
  .././include/rayleigh_ritz_beam.h
+ .././include/state.h
  /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/src/rayleigh_ritz_beam.cpp

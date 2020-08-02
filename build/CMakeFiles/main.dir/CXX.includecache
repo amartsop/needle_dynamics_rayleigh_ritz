@@ -93,6 +93,14 @@ dynamics_math.h
 .././include/dynamics_math.h
 modes_magnitude.h
 .././include/modes_magnitude.h
+euler_rotations.h
+.././include/euler_rotations.h
+state.h
+.././include/state.h
+
+.././include/state.h
+armadillo
+-
 
 /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/main.cpp
 iostream

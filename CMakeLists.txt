@@ -26,10 +26,13 @@ set(ALL_LIBS
   ${ARMADILLO_LIBRARIES} ${Boost_LIBRARIES})
 
 set(SOURCES
-  ./src/rayleigh_ritz_beam.cpp
   ./src/euler_rotations.cpp
   ./src/dynamics_math.cpp
   ./src/modes_magnitude.cpp
+  ./src/input_trajectory.cpp
+  ./src/handle.cpp
+  ./src/rayleigh_ritz_beam.cpp
+  ./src/system_rayleigh_ritz.cpp
     )
 
   

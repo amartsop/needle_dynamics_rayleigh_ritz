@@ -6,36 +6,38 @@
 #include "dynamics_math.h"
 #include "modes_magnitude.h"
 #include "euler_rotations.h"
-#include "state.h"
 
 class RayleighRitzBeam : public NeedleProperties
 {
 public:
     RayleighRitzBeam(uint axial_dofs, uint bending_y_dofs, uint bending_z_dofs);
 
-//     // Calculate system model function 
-//     arma::dvec calculate(arma::dvec state_vector, double t);
-
     // Mass matrix getter
     arma::dmat get_mass_matrix(void){ return m_mass; }
     
+    // Damping matrix getter
+    arma::dmat get_damping_matrix(void){ return m_damping; }
+
     // Stiffness matrix getter
     arma::dmat get_stiffness_matrix(void){ return m_stiffness; }
 
-//     // External force getter 
-//     arma::dvec get_external_force(void){ return m_qforce; }
+    // Coriolis vector getter
+    arma::dvec get_coriolis_vector(void){ return m_fvf; }
 
-//     // Get system size 
-//     uint get_model_size(void) { return m_dofs; }
+    // External force getter 
+    arma::dvec get_external_force(void){ return m_qforce; }
 
-//     // Get system deflection 
-//     arma::dvec get_deflection(double ksi, arma::dvec qf);
+    // Get system deflection 
+    arma::dvec get_deflection(double ksi, arma::dvec qf);
 
-//     // Get beam length
-//     double get_beam_length(void) { return m_beam_length; }
+    // Get beam length
+    double get_beam_length(void) { return m_beam_length; }
 
     // Update flexible body matrices and coriolis vector
     void update(double t, arma::dvec q, arma::dvec q_dot);
+
+    // Get elastic dofs 
+    uint get_elastic_dofs(void) { return m_elastic_dofs; }
 
 private:
     // Number of axial dofs 
@@ -47,7 +49,13 @@ private:
     // Number of bending dofs z direction
     uint m_bending_z_dofs;
 
-    // Number of dofs
+    // Number of elastic dofs
+    uint m_elastic_dofs;
+
+    // Number of rigid dofs 
+    const uint m_rigid_dofs = 6;
+
+    // Total number of dofs
     uint m_dofs;
 
 private:
@@ -84,12 +92,19 @@ private:
     // Inertial tensor of body wrt to point A (reference frame) (kg * m^2)
     arma::dmat m_i_a_f;
 
-    // Gravity acceleration (m/s^2)
-    const double m_grav = 9.80665;
+    // Weight wrt to inertial frame
+    arma::dvec m_weight_F;
+
+    // Damping coeefficients 
+    const double m_mu = 10.0;
+    const double m_kappa = 0.0;
 
 private:
     // Flexible body mass matrix
     arma::dmat m_mass;
+
+    // Flexible body damping matrix
+    arma::dmat m_damping;
 
     // Flexible body stiffness matrix
     arma::dmat m_stiffness;
@@ -99,6 +114,32 @@ private:
 
     // Flexible body external force 
     arma::dvec m_qforce;
+
+public:
+    arma::dmat get_mf31_matrix(void){ return m_mf31; }
+    arma::dmat get_mf32_matrix(void){ return m_mf32; }
+    arma::dmat get_mf33_matrix(void){ return m_mf33; }
+    arma::dmat get_cf33_matrix(void){ return m_cf33; }
+    arma::dmat get_kf33_matrix(void){ return m_kf33; }
+    arma::dmat get_fvf3_vector(void){ return m_fvf3; }
+    arma::dmat get_qf3_vector(void){ return m_qf3; }
+
+private:
+    // Elastic components
+    // Mass matrix components 
+    arma::dmat m_mf31, m_mf32, m_mf33;
+
+    // Damping matrix component
+    arma::dmat  m_cf33;
+
+    // Stiffness matrix component
+    arma::dmat  m_kf33;
+
+    // Coriolis vector component 
+    arma::dvec m_fvf3; 
+
+    // External forces component 
+    arma::dvec m_qf3; 
 
 private:
     // State 
@@ -113,9 +154,18 @@ private:
     // Rotation matrix 
     arma::dmat m_rot_f_F;
 
+    // Current time 
+    double m_time;
+    
 private:
+    // State update 
+    void state_update(arma::dvec q, arma::dvec q_dot);
+
     // Mass matrix of flexible body calculation 
     void mass_matrix_calculation(void); 
+
+    // Stiffness matrix of flexible body calculation 
+    void damping_matrix_calculation(void); 
 
     // Stiffness matrix of flexible body calculation 
     void stiffness_matrix_calculation(void); 
@@ -123,9 +173,8 @@ private:
     // Coriolis-centrifugal forces calculation
     void coriolis_vector_calculation(void);
 
-    // // External force calculation
-    // void external_force_calculation(double t, arma::dvec q, arma::dvec q_dot);
-
+    // External force calculation
+    void external_force_calculation(void);
 
 private:
 
@@ -147,9 +196,6 @@ private:
 
     // Locator matrices
     arma::dmat m_lu_mat, m_lv_mat, m_lw_mat; 
-
-    // // Shape function 
-    // arma::dmat shape_function(double x);
 
 private:
     // Natural frequency y dircetion
@@ -194,17 +240,17 @@ private:
     // Bending z mode magnitude coefficient
     arma::dvec m_jwn;
 
-// private:
-//     // External force body frame (position l)
-//     arma::dvec external_force(double t, arma::dvec q, arma::dvec q_dot);
+private:
+    // External force body frame (position l) FB(t, q, q_dot)
+    arma::dvec external_force(void);
 
-//     // External traction force
-//     arma::dvec external_traction_force(double t, arma::dvec q, arma::dvec q_dot);
-
-//     // Distributed load body frame
-//     arma::dvec distributed_load(double t, double x, arma::dvec q, arma::dvec q_dot);
+    // Distributed load body frame p(t, x, q , q_dot)
+    arma::dvec distributed_load(double x);
 
 private:
+    // Shape function 
+    arma::dmat shape_function(double x);
+
     // R integrals 
     double r_integrals(double a, double b, double l, int id);
 
@@ -213,4 +259,7 @@ private:
 
     // N integrals calculation
     void n_integrals(void);
+
+    // D(x) function
+    arma::dmat d_x(double x);
 };

@@ -204,6 +204,60 @@ src/euler_rotations.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/euler_rotations.cpp.s
 .PHONY : src/euler_rotations.cpp.s
 
+src/handle.o: src/handle.cpp.o
+
+.PHONY : src/handle.o
+
+# target to build an object file
+src/handle.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/handle.cpp.o
+.PHONY : src/handle.cpp.o
+
+src/handle.i: src/handle.cpp.i
+
+.PHONY : src/handle.i
+
+# target to preprocess a source file
+src/handle.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/handle.cpp.i
+.PHONY : src/handle.cpp.i
+
+src/handle.s: src/handle.cpp.s
+
+.PHONY : src/handle.s
+
+# target to generate assembly for a file
+src/handle.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/handle.cpp.s
+.PHONY : src/handle.cpp.s
+
+src/input_trajectory.o: src/input_trajectory.cpp.o
+
+.PHONY : src/input_trajectory.o
+
+# target to build an object file
+src/input_trajectory.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/input_trajectory.cpp.o
+.PHONY : src/input_trajectory.cpp.o
+
+src/input_trajectory.i: src/input_trajectory.cpp.i
+
+.PHONY : src/input_trajectory.i
+
+# target to preprocess a source file
+src/input_trajectory.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/input_trajectory.cpp.i
+.PHONY : src/input_trajectory.cpp.i
+
+src/input_trajectory.s: src/input_trajectory.cpp.s
+
+.PHONY : src/input_trajectory.s
+
+# target to generate assembly for a file
+src/input_trajectory.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/input_trajectory.cpp.s
+.PHONY : src/input_trajectory.cpp.s
+
 src/modes_magnitude.o: src/modes_magnitude.cpp.o
 
 .PHONY : src/modes_magnitude.o
@@ -258,6 +312,33 @@ src/rayleigh_ritz_beam.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/rayleigh_ritz_beam.cpp.s
 .PHONY : src/rayleigh_ritz_beam.cpp.s
 
+src/system_rayleigh_ritz.o: src/system_rayleigh_ritz.cpp.o
+
+.PHONY : src/system_rayleigh_ritz.o
+
+# target to build an object file
+src/system_rayleigh_ritz.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/system_rayleigh_ritz.cpp.o
+.PHONY : src/system_rayleigh_ritz.cpp.o
+
+src/system_rayleigh_ritz.i: src/system_rayleigh_ritz.cpp.i
+
+.PHONY : src/system_rayleigh_ritz.i
+
+# target to preprocess a source file
+src/system_rayleigh_ritz.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/system_rayleigh_ritz.cpp.i
+.PHONY : src/system_rayleigh_ritz.cpp.i
+
+src/system_rayleigh_ritz.s: src/system_rayleigh_ritz.cpp.s
+
+.PHONY : src/system_rayleigh_ritz.s
+
+# target to generate assembly for a file
+src/system_rayleigh_ritz.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/system_rayleigh_ritz.cpp.s
+.PHONY : src/system_rayleigh_ritz.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -276,12 +357,21 @@ help:
 	@echo "... src/euler_rotations.o"
 	@echo "... src/euler_rotations.i"
 	@echo "... src/euler_rotations.s"
+	@echo "... src/handle.o"
+	@echo "... src/handle.i"
+	@echo "... src/handle.s"
+	@echo "... src/input_trajectory.o"
+	@echo "... src/input_trajectory.i"
+	@echo "... src/input_trajectory.s"
 	@echo "... src/modes_magnitude.o"
 	@echo "... src/modes_magnitude.i"
 	@echo "... src/modes_magnitude.s"
 	@echo "... src/rayleigh_ritz_beam.o"
 	@echo "... src/rayleigh_ritz_beam.i"
 	@echo "... src/rayleigh_ritz_beam.s"
+	@echo "... src/system_rayleigh_ritz.o"
+	@echo "... src/system_rayleigh_ritz.i"
+	@echo "... src/system_rayleigh_ritz.s"
 .PHONY : help
 
 

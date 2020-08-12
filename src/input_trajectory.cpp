@@ -17,10 +17,10 @@ void InputTrajectory::rigid_body_trajectory(double t)
     // /******************* Position *******************/
 
     // Position amplitude (m)
-   arma::dvec a_p = {0.0, 0.0, 0.0};
+   arma::dvec a_p = {0.2, 0.0, 0.0};
 
     // Position frequency (Hz)
-    arma::dvec f_p = {0.0, 0.0, 0.0};
+    arma::dvec f_p = {1.0, 0.0, 13.0};
 
     // Position phase (rad)
     arma::dvec phi_p = {0.0, 0.0, 0.0};
@@ -30,7 +30,7 @@ void InputTrajectory::rigid_body_trajectory(double t)
     arma::dvec a_o = {0.0, 0.0, 0.0};
 
     // Euler angles frequency (Hz)
-    arma::dvec f_o = {0.0, 0.0, 0.1};
+    arma::dvec f_o = {0.0, 1.0, 0.1};
 
     // Euler angles phase (rad)
     arma::dvec phi_o = {0.0, 0.0, 0.0};

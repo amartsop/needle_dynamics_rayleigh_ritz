@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
     // Handle and beam system
     SystemRayleighRitz system_rayleigh_ritz(&handle, &needle, &input_traj);
 
-
     // /********************* Simulation ************************/ 
     // Initial beam deflection 
     arma::dvec qf0 = arma::zeros<arma::dvec>(nu + nv + nw);
@@ -43,7 +42,6 @@ int main(int argc, char *argv[])
     std::vector<arma::dvec> state_vector;
     arma::dvec state0 = arma::join_vert(qf0, qf0_dot);
     state_vector.push_back(state0);
-
 
     // Reaction forces and moments
     std::vector<double> fx, fy, fz;
@@ -80,12 +78,12 @@ int main(int argc, char *argv[])
         };
 
         // Reaction forces 
-        arma::dvec reaction_forces = -system_rayleigh_ritz.get_reaction_forces();
+        arma::dvec reaction_forces = - system_rayleigh_ritz.get_reaction_forces();
         fx.push_back(reaction_forces(0)); fy.push_back(reaction_forces(1));
         fz.push_back(reaction_forces(2));
 
         // Reaction moment
-        arma::dvec reaction_moment = -system_rayleigh_ritz.get_reaction_moment();
+        arma::dvec reaction_moment = - system_rayleigh_ritz.get_reaction_moment();
         mx.push_back(reaction_moment(0)); my.push_back(reaction_moment(1));
         mz.push_back(reaction_moment(2));
 

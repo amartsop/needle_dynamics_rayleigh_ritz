@@ -39,6 +39,15 @@ public:
     // Get elastic dofs 
     uint get_elastic_dofs(void) { return m_elastic_dofs; }
 
+    // Get axial frequencies 
+    arma::dvec get_axial_frequencies(void) { return m_u_freq; }
+
+    // Get bending y frequencies 
+    arma::dvec get_bending_y_frequencies(void) { return m_v_freq; }
+
+    // Get bending z frequencies 
+    arma::dvec get_bending_z_frequencies(void) { return m_w_freq; }
+
 private:
     // Number of axial dofs 
     uint m_axial_dofs;
@@ -248,6 +257,7 @@ private:
     arma::dvec distributed_load(double x);
 
 private:
+
     // Shape function 
     arma::dmat shape_function(double x);
 

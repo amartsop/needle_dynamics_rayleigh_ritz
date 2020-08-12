@@ -94,6 +94,7 @@ arma::dvec SystemRayleighRitz::calculate( arma::dvec state_vector, double t)
     // Calculate tau3
     arma::dvec tau3 = fvf3 + qf3 - mf31 * roa_ddot_F_F - mf32 * theta_ddot_f;
 
+
     // Calculate elastic acceleration
     arma::dvec qf_ddot = arma::solve(mf33, tau3 - cf33 * qf_dot - kf33 * qf);
 
@@ -113,7 +114,7 @@ arma::dvec SystemRayleighRitz::calculate( arma::dvec state_vector, double t)
     // Reaction force at point a 
     arma::dvec qc1 = {reaction_force(0), reaction_force(1), reaction_force(2)};
     arma::dvec qc2 = {reaction_force(3), reaction_force(4), reaction_force(5)};
-    arma::dvec fa_F = qc1; arma::dvec ma_f = arma::solve(g_mat.t(), qc2);
+    arma::dvec fa_F = - qc1; arma::dvec ma_f = - arma::solve(g_mat.t(), qc2);
 
     // Reaction force at point c
     arma::dvec fc_F = m_handle_ptr->get_handle_mass() * roc_ddot_F_F -
@@ -122,7 +123,7 @@ arma::dvec SystemRayleighRitz::calculate( arma::dvec state_vector, double t)
     m_fc_f = rot_f_F.t() * fc_F;
 
     // Handle inertial tensor 
-    arma::dmat ic_f =m_handle_ptr->get_inertial_tensor(); 
+    arma::dmat ic_f = m_handle_ptr->get_inertial_tensor(); 
 
     // Reaction moment at point c
     m_mc_f = ic_f * (g_dot_mat * theta_r + g_mat * theta_ddot_r) - ma_f -

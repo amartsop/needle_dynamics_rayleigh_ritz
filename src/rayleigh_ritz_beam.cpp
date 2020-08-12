@@ -88,7 +88,7 @@ RayleighRitzBeam::RayleighRitzBeam(uint axial_dofs, uint bending_y_dofs, uint be
         m_alpha_freq(i) = m_u_freq(i) / m_c;
 
         // Mode magnitude
-        m_u_hat(i) = sqrt(2.0 / m_beam_mass);
+        m_u_hat(i) = 0.0 * sqrt(2.0 / m_beam_mass);
     }
     
     for (uint i = 0; i < m_bending_y_dofs; i++)
@@ -386,15 +386,15 @@ void RayleighRitzBeam::external_force_calculation(void)
 // External force body frame (position l) FB(t, q, q_dot)
 arma::dvec RayleighRitzBeam::external_force(void)
 {
-    double fx = 0.0 * m_time;
-    double fy = 0.0 * m_time;
-    double fz = 0.0 * m_time;
 
-    if (fx >= 0.5) { fx =  0.0; }
-    if (fy >= 0.5) { fy =  0.0; }
-    if (fz >= 0.5) { fz = 0.0; }
+    arma::dvec fb_F = {0.0, 0.5, 0.0};
+    arma::dvec fb_f = m_rot_f_F.t() * fb_F;
+    // double fx = 1.0; 
+    // double fy = 0.0;
+    // double fz = 0.0;
+
         
-    arma::dvec fb_f = {fx, fy, fz};
+    // arma::dvec fb_f = {fx, fy, fz};
 
    return fb_f;
 }

@@ -18,7 +18,7 @@ SystemRayleighRitz::SystemRayleighRitz(Handle *handle, RayleighRitzBeam *needle,
 }
 
 
-arma::dvec SystemRayleighRitz::calculate( arma::dvec state_vector, double t)
+arma::dvec SystemRayleighRitz::f(double t, arma::dvec state_vector)
 {
     // Update rigid body trajectory
     m_input_traj_ptr->update(t);
@@ -134,4 +134,17 @@ arma::dvec SystemRayleighRitz::calculate( arma::dvec state_vector, double t)
     return arma::join_vert(qf_dot, qf_ddot);
 }
 
+arma::dmat SystemRayleighRitz::dfdx(double t, arma::dvec x)
+{
 
+    arma::dvec fx = f(t, x); arma::dvec x_pert = x;
+    arma::dmat jacobian = arma::zeros(fx.n_rows, x.n_rows);
+
+    for (uint i = 0; i < x.n_rows; i ++)
+    {
+        x_pert(i) = x_pert(i) + m_tol;
+        jacobian.col(i) = (f(t, x_pert) - fx) / m_tol;
+        x_pert(i) = x(i);
+    }
+    return jacobian;
+}

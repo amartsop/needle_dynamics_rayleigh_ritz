@@ -68,6 +68,7 @@ private:
     uint m_dofs;
 
 private:
+
     // Beam lenght (m)
     double m_beam_length;
 
@@ -105,8 +106,12 @@ private:
     arma::dvec m_weight_F;
 
     // Damping coeefficients 
-    const double m_mu = 10.0;
-    const double m_kappa = 0.0;
+    double m_mu, m_kappa;
+
+    // Damping ratio
+    const double m_zeta1 = 0.1;
+    const double m_zeta2 = 0.1;
+
 
 private:
     // Flexible body mass matrix
@@ -149,6 +154,15 @@ private:
 
     // External forces component 
     arma::dvec m_qf3; 
+
+    // Elastic mass matrix calculation (constant)
+    void elastic_mass_matrix_calculation(void);
+
+    // Elastic damping matrix calculation
+    void elastic_damping_matrix_calculation(void);
+
+    // Elastic stiffness matrix calculation
+    void elastic_stiffness_matrix_calculation(void);
 
 private:
     // State 

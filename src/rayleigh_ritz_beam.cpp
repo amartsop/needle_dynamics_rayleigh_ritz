@@ -88,7 +88,7 @@ RayleighRitzBeam::RayleighRitzBeam(uint axial_dofs, uint bending_y_dofs, uint be
         m_alpha_freq(i) = m_u_freq(i) / m_c;
 
         // Mode magnitude
-        m_u_hat(i) = 0.0 * sqrt(2.0 / m_beam_mass);
+        m_u_hat(i) = sqrt(2.0 / m_beam_mass);
     }
     
     for (uint i = 0; i < m_bending_y_dofs; i++)
@@ -144,8 +144,20 @@ RayleighRitzBeam::RayleighRitzBeam(uint axial_dofs, uint bending_y_dofs, uint be
     // Calculate shape integrals(constant)
     shape_integrals();
 
+    //Elastic mass matrix 
+    elastic_mass_matrix_calculation();
+
+    //Elastic stiffness matrix 
+    elastic_stiffness_matrix_calculation();
+
+    //Elastic damping matrix 
+    elastic_damping_matrix_calculation();
+
     // Calculate stiffness matrix (constant)
     stiffness_matrix_calculation();
+
+    // Calculate damping matrix (constant)
+    damping_matrix_calculation(); 
 }
 
 
@@ -167,7 +179,6 @@ void RayleighRitzBeam::state_update(arma::dvec q, arma::dvec q_dot)
 // Update beam equations
 void RayleighRitzBeam::update(double t, arma::dvec q, arma::dvec q_dot)
 {
-
     // State update 
     state_update(q, q_dot);
 
@@ -190,8 +201,6 @@ void RayleighRitzBeam::update(double t, arma::dvec q, arma::dvec q_dot)
     // Update mass matrix 
     mass_matrix_calculation();
 
-    // Update damping matrix 
-    damping_matrix_calculation(); 
 
     // Update coriolis-centrifugal vector 
     coriolis_vector_calculation();
@@ -228,52 +237,41 @@ void RayleighRitzBeam::mass_matrix_calculation(void)
 
     m_mf32 = mf23.t();
 
-    m_mf33 = m_n_int[6];
-
     arma::dmat mf3 = arma::join_horiz(m_mf31, m_mf32, m_mf33);
 
     // Mass matrix 
     m_mass = arma::join_vert(mf1, mf2, mf3);
 }
 
+
 // Damping matrix calculation
 void RayleighRitzBeam::damping_matrix_calculation(void)
 {
-    m_cf33 = m_mu * m_mf33  + m_kappa * m_kf33;
-    m_damping = m_mu * m_mass + m_kappa * m_stiffness;
+    // First row 
+    arma::dmat cf11 = arma::zeros(3, 3); arma::dmat cf12 = arma::zeros(3, 3);
+    arma::dmat cf13 = arma::zeros(3, m_elastic_dofs);
+
+    arma::dmat cf1 = arma::join_horiz(cf11, cf12, cf13);
+
+    // Second row 
+    arma::dmat cf21 = arma::zeros(3, 3); arma::dmat cf22 = arma::zeros(3, 3);
+    arma::dmat cf23 = arma::zeros(3, m_elastic_dofs);
+    arma::dmat cf2 = arma::join_horiz(cf21, cf22, cf23);
+
+    // Third row 
+    arma::dmat cf31 = arma::zeros(m_elastic_dofs, 3);
+    arma::dmat cf32 = arma::zeros(m_elastic_dofs, 3);
+
+    arma::dmat cf3 = arma::join_horiz(cf31, cf32, m_cf33);
+
+    // Total damping matrix 
+    m_damping = arma::join_vert(cf1, cf2, cf3);
 }
+
 
 // Stiffness matrix calculation
 void RayleighRitzBeam::stiffness_matrix_calculation(void)
 {
-    // Axial stiffness matrix 
-    arma::dmat ku = arma::zeros<arma::dmat>(m_axial_dofs, m_axial_dofs);
-    for (uint i = 0; i < m_axial_dofs; i++)
-    {
-        ku(i, i) = pow(m_u_freq(i), 2.0);
-    }
-
-    // Bending y stiffness matrix 
-    arma::dmat kv = arma::eye<arma::dmat>(m_bending_y_dofs, m_bending_y_dofs);
-    for (uint i = 0; i < m_bending_y_dofs; i++)
-    {
-        double rv_n = ModesMagnitude::r(m_beam_length, m_beta_freq(i));
-        double rv_tilde_n = ModesMagnitude::r_tilde(m_beam_length, m_beta_freq(i));
-        kv(i, i) = (rv_n / rv_tilde_n) * pow(m_v_freq(i), 2.0);
-    }
-
-    // Bending z stiffness matrix 
-    arma::dmat kw = arma::eye<arma::dmat>(m_bending_z_dofs, m_bending_z_dofs);
-    for (uint i = 0; i < m_bending_z_dofs; i++)
-    {
-        uint n = i + 1; double sz_n = arma::as_scalar(m_sz(i));
-
-        double rw_n = ModesMagnitude::r(m_beam_length, m_gamma_freq(i));
-        double rw_tilde_n = ModesMagnitude::r_tilde(m_beam_length, m_gamma_freq(i));
-        kw(i, i) = (rw_n / rw_tilde_n) * pow(m_w_freq(i), 2.0);
-    }
-
-
     // First row 
     arma::dmat kf11 = arma::zeros(3, 3); arma::dmat kf12 = arma::zeros(3, 3);
     arma::dmat kf13 = arma::zeros(3, m_elastic_dofs);
@@ -288,8 +286,6 @@ void RayleighRitzBeam::stiffness_matrix_calculation(void)
     // Third row 
     arma::dmat kf31 = arma::zeros(m_elastic_dofs, 3);
     arma::dmat kf32 = arma::zeros(m_elastic_dofs, 3);
-    m_kf33 = m_lu_mat.t() * ku * m_lu_mat + m_lv_mat.t() * kv *
-        m_lv_mat + m_lw_mat.t() * kw * m_lw_mat;
 
     arma::dmat kf3 = arma::join_horiz(kf31, kf32, m_kf33);
 
@@ -387,17 +383,19 @@ void RayleighRitzBeam::external_force_calculation(void)
 arma::dvec RayleighRitzBeam::external_force(void)
 {
 
-    arma::dvec fb_F = {0.0, 0.5, 0.0};
-    arma::dvec fb_f = m_rot_f_F.t() * fb_F;
-    // double fx = 1.0; 
-    // double fy = 0.0;
-    // double fz = 0.0;
+    // arma::dvec fb_F = {0.0, 0.0, 0.0};
+    // arma::dvec fb_f = m_rot_f_F.t() * fb_F;
+    double fx = 1.0; 
+    double fy = 0.0;
+    double fz = 0.5;
 
+    if(m_time > 2.0) { fz = 0.0; }
         
-    // arma::dvec fb_f = {fx, fy, fz};
+    arma::dvec fb_f = {fx, fy, fz};
 
    return fb_f;
 }
+
 
 // Distributed load body frame p(t, x, q , q_dot)
 arma::dvec RayleighRitzBeam::distributed_load(double x)
@@ -412,6 +410,8 @@ arma::dvec RayleighRitzBeam::distributed_load(double x)
    return p;
 }
 
+
+// Dx matrix
 arma::dmat RayleighRitzBeam::d_x(double x)
 {
     // Central line distance 
@@ -420,11 +420,71 @@ arma::dmat RayleighRitzBeam::d_x(double x)
     return dm::s(rapoc_f_f + shape_function(x) * m_qf);
 }
 
+
 // Get deflection with respect to f frame
 arma::dvec RayleighRitzBeam::get_deflection(double ksi, arma::dvec qf)
 {
     return shape_function(ksi * m_beam_length) * qf;
 }
+
+
+// Elastic mass matrix
+void RayleighRitzBeam::elastic_mass_matrix_calculation(void)
+{
+    m_mf33 = m_phi11_dash + m_phi22_dash + m_phi33_dash;
+}
+
+
+// Elastic damping matrix
+void RayleighRitzBeam::elastic_damping_matrix_calculation(void)
+{
+    double omega1 = arma::as_scalar(m_w_freq(0));
+    double omega2 = arma::as_scalar(m_w_freq(1));
+
+    // Rayleigh Damping
+    m_kappa = 2.0 * (m_zeta2 * omega2 - m_zeta1 * omega1) /
+        (pow(omega2, 2.0) - pow(omega1, 2.0));
+
+    m_mu = 2.0 * m_zeta1 * omega1 - pow(omega1, 2.0) * m_kappa;
+
+    m_cf33 = m_mu * m_mf33 + m_kappa * m_kf33;
+}
+
+
+// Elastic stiffness matrix
+void RayleighRitzBeam::elastic_stiffness_matrix_calculation(void)
+{
+    // Axial stiffness matrix 
+    arma::dmat ku = arma::zeros<arma::dmat>(m_axial_dofs, m_axial_dofs);
+    for (uint i = 0; i < m_axial_dofs; i++)
+    {
+        ku(i, i) = pow(m_u_freq(i), 2.0);
+    }
+
+    // Bending y stiffness matrix 
+    arma::dmat kv = arma::eye<arma::dmat>(m_bending_y_dofs, m_bending_y_dofs);
+    for (uint i = 0; i < m_bending_y_dofs; i++)
+    {
+        double rv_n = ModesMagnitude::r(m_beam_length, m_beta_freq(i));
+        double rv_tilde_n = ModesMagnitude::r_tilde(m_beam_length, m_beta_freq(i));
+        kv(i, i) = (rv_n / rv_tilde_n) * pow(m_v_freq(i), 2.0);
+    }
+
+    // Bending z stiffness matrix 
+    arma::dmat kw = arma::eye<arma::dmat>(m_bending_z_dofs, m_bending_z_dofs);
+    for (uint i = 0; i < m_bending_z_dofs; i++)
+    {
+        uint n = i + 1; double sz_n = arma::as_scalar(m_sz(i));
+
+        double rw_n = ModesMagnitude::r(m_beam_length, m_gamma_freq(i));
+        double rw_tilde_n = ModesMagnitude::r_tilde(m_beam_length, m_gamma_freq(i));
+        kw(i, i) = (rw_n / rw_tilde_n) * pow(m_w_freq(i), 2.0);
+    }
+
+    m_kf33 = m_lu_mat.t() * ku * m_lu_mat + m_lv_mat.t() * kv *
+        m_lv_mat + m_lw_mat.t() * kw * m_lw_mat;
+}
+
 
 // Shape function 
 arma::dmat RayleighRitzBeam::shape_function(double x)
@@ -601,6 +661,7 @@ void RayleighRitzBeam::n_integrals(void)
         m_omega(1) * (m_phi13_dash - m_phi31_dash) +
         m_omega(2) * (m_phi21_dash - m_phi12_dash);
 }
+
 
 // Shape integrals calculation 
 void RayleighRitzBeam::shape_integrals(void)

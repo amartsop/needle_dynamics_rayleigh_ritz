@@ -19,7 +19,7 @@
 int main(int argc, char *argv[])
 {
     // Axial and bending dofs
-    int nu = 4, nv = 4, nw = 4;
+    int nu = 1, nv = 4, nw = 4;
 
     // Input trajectory
     InputTrajectory input_traj;
@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
     // Handle and beam system
     SystemRayleighRitz system_rayleigh_ritz(&handle, &needle, &input_traj);
+
 
     // /********************* Simulation ************************/ 
     // Initial beam deflection 
@@ -61,7 +62,8 @@ int main(int argc, char *argv[])
     PostProcessingRR<RayleighRitzBeam> post_processing_rr(&needle);
 
     // Problem solver 
-    NumericalIntegration<SystemRayleighRitz> ni(&system_rayleigh_ritz, h, 4);
+    NumericalIntegration<SystemRayleighRitz> ni(&system_rayleigh_ritz, h,
+        state0.n_rows);
 
     // Iteration counter 
     uint counter = 0;
@@ -69,7 +71,7 @@ int main(int argc, char *argv[])
     while (t <= t_final)
     {
         // System solution 
-        arma::dvec x = ni.solve(state_vector.at(counter), t);
+        arma::dvec x = ni.implicit_midpoint(t, state_vector.at(counter));
         state_vector.push_back(x);
 
         if (!x.is_finite()) {
@@ -116,7 +118,7 @@ int main(int argc, char *argv[])
     arma::dmat t_mz = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), mz_vec);
 
     gp << "plot '-' with lines \n";
-    gp.send1d(t_fz);
+    gp.send1d(t_my);
 
 
     // Animation

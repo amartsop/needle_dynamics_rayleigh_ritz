@@ -15,7 +15,10 @@ public:
         InputTrajectory *input_traj);
 
     // Calculate system model function 
-    arma::dvec calculate( arma::dvec state_vector, double t);
+    arma::dvec f(double t, arma::dvec state_vector);
+
+    // Calculate system's Jacobian
+    arma::dmat dfdx(double t, arma::dvec x);
 
     // Get reaction forces 
     arma::dvec get_reaction_forces(void) { return m_fc_f; }
@@ -47,6 +50,9 @@ private:
     // Input coordinates 
     InputTrajectory* m_input_traj_ptr;
 
+private:
+    // Numerical Jacobian tolerance
+    double m_tol = 1.0e-8;
 
 };
 

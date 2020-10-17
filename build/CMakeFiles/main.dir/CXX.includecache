@@ -158,6 +158,12 @@ rayleigh_ritz_beam.h
 input_trajectory.h
 .././include/input_trajectory.h
 
+.././include/timer.hpp
+iostream
+-
+chrono
+-
+
 /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/main.cpp
 iostream
 -
@@ -187,6 +193,8 @@ numerical_integration.hpp
 /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/numerical_integration.hpp
 post_processing_rr.hpp
 /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/post_processing_rr.hpp
+timer.hpp
+-
 
 /home/thanos/Desktop/PhDDevelopment/MastersDissertation/Rayleigh_Ritz/needle_dynamics/src/dynamics_math.cpp
 dynamics_math.h

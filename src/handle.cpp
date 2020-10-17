@@ -28,7 +28,7 @@ Handle::Handle()
     m_dofs = m_rigid_dofs;
 }
 
-void Handle::state_update(arma::dvec q, arma::dvec q_dot)
+void Handle::state_update(const arma::dvec& q, const arma::dvec& q_dot)
 {
     // State
     m_roc_F_F = {q(0), q(1), q(2)};
@@ -39,7 +39,7 @@ void Handle::state_update(arma::dvec q, arma::dvec q_dot)
     m_theta_dot = {q_dot(3), q_dot(4), q_dot(5)};
 }
 
-void Handle::update(double t, arma::dvec q, arma::dvec q_dot)
+void Handle::update(double t, const arma::dvec& q, const arma::dvec& q_dot)
 {
     // State Update 
     state_update(q, q_dot);

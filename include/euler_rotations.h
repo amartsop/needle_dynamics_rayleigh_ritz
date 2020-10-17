@@ -19,14 +19,15 @@ public:
 
     // Euler rotation matrix z-y'-x''
     static arma::dmat rotation(double phi, double theta, double psi);
-    static arma::dmat rotation(arma::dvec euler_angles);
+    static arma::dmat rotation(const arma::dvec& euler_angles);
 
     // Connection of anglular velocity with euler angles derivative (w = G * theta_dot)
     static arma::dmat G(double phi, double theta, double psi);
-    static arma::dmat G(arma::dvec euler_angles);
+    static arma::dmat G(const arma::dvec& euler_angles);
 
     // Time derivative of G matrix
-    static arma::dmat G_dot(arma::dvec euler_angles, arma::dvec euler_angles_dot);
+    static arma::dmat G_dot(const arma::dvec& euler_angles,
+        const arma::dvec& euler_angles_dot);
 
 private:
 

@@ -12,41 +12,41 @@ class RayleighRitzBeam : public NeedleProperties
 public:
     RayleighRitzBeam(uint axial_dofs, uint bending_y_dofs, uint bending_z_dofs);
 
+    // Update flexible body matrices and coriolis vector
+    void update(double t, const arma::dvec& q, const arma::dvec& q_dot);
+
     // Mass matrix getter
-    arma::dmat get_mass_matrix(void){ return m_mass; }
+    arma::dmat get_mass_matrix(void) const { return m_mass; }
     
     // Damping matrix getter
-    arma::dmat get_damping_matrix(void){ return m_damping; }
+    arma::dmat get_damping_matrix(void) const { return m_damping; }
 
     // Stiffness matrix getter
-    arma::dmat get_stiffness_matrix(void){ return m_stiffness; }
+    arma::dmat get_stiffness_matrix(void) const { return m_stiffness; }
 
     // Coriolis vector getter
-    arma::dvec get_coriolis_vector(void){ return m_fvf; }
+    arma::dvec get_coriolis_vector(void) const { return m_fvf; }
 
     // External force getter 
-    arma::dvec get_external_force(void){ return m_qforce; }
+    arma::dvec get_external_force_vector(void) const { return m_qforce; }
 
     // Get system deflection 
-    arma::dvec get_deflection(double ksi, arma::dvec qf);
+    arma::dvec get_deflection(const arma::dvec& r_ap0_f_f, const arma::dvec& qf);
 
     // Get beam length
-    double get_beam_length(void) { return m_beam_length; }
-
-    // Update flexible body matrices and coriolis vector
-    void update(double t, arma::dvec q, arma::dvec q_dot);
+    double get_beam_length(void) const { return m_beam_length; }
 
     // Get elastic dofs 
-    uint get_elastic_dofs(void) { return m_elastic_dofs; }
+    uint get_elastic_dofs(void) const { return m_elastic_dofs; }
 
     // Get axial frequencies 
-    arma::dvec get_axial_frequencies(void) { return m_u_freq; }
+    arma::dvec get_axial_frequencies(void) const { return m_u_freq; }
 
     // Get bending y frequencies 
-    arma::dvec get_bending_y_frequencies(void) { return m_v_freq; }
+    arma::dvec get_bending_y_frequencies(void) const { return m_v_freq; }
 
     // Get bending z frequencies 
-    arma::dvec get_bending_z_frequencies(void) { return m_w_freq; }
+    arma::dvec get_bending_z_frequencies(void) const { return m_w_freq; }
 
 private:
     // Number of axial dofs 
@@ -112,7 +112,6 @@ private:
     const double m_zeta1 = 0.1;
     const double m_zeta2 = 0.1;
 
-
 private:
     // Flexible body mass matrix
     arma::dmat m_mass;
@@ -130,13 +129,13 @@ private:
     arma::dvec m_qforce;
 
 public:
-    arma::dmat get_mf31_matrix(void){ return m_mf31; }
-    arma::dmat get_mf32_matrix(void){ return m_mf32; }
-    arma::dmat get_mf33_matrix(void){ return m_mf33; }
-    arma::dmat get_cf33_matrix(void){ return m_cf33; }
-    arma::dmat get_kf33_matrix(void){ return m_kf33; }
-    arma::dmat get_fvf3_vector(void){ return m_fvf3; }
-    arma::dmat get_qf3_vector(void){ return m_qf3; }
+    arma::dmat get_mf31_matrix(void) const { return m_mf31; }
+    arma::dmat get_mf32_matrix(void) const { return m_mf32; }
+    arma::dmat get_mf33_matrix(void) const { return m_mf33; }
+    arma::dmat get_cf33_matrix(void) const { return m_cf33; }
+    arma::dmat get_kf33_matrix(void) const { return m_kf33; }
+    arma::dmat get_fvf3_vector(void) const { return m_fvf3; }
+    arma::dmat get_qf3_vector(void) const { return m_qf3; }
 
 private:
     // Elastic components
@@ -182,7 +181,7 @@ private:
     
 private:
     // State update 
-    void state_update(arma::dvec q, arma::dvec q_dot);
+    void state_update(const arma::dvec& q, const arma::dvec& q_dot);
 
     // Mass matrix of flexible body calculation 
     void mass_matrix_calculation(void); 
@@ -273,7 +272,13 @@ private:
 private:
 
     // Shape function 
-    arma::dmat shape_function(double x);
+    arma::dmat shape_function(const arma::dvec& x);
+
+    // Shape function of neutral axis
+    arma::dmat shape_function_tilde(double x);
+
+    // Shape function breve
+    arma::dmat shape_function_breve(const arma::dvec& x);
 
     // R integrals 
     double r_integrals(double a, double b, double l, int id);

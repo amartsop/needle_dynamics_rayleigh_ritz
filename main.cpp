@@ -15,11 +15,15 @@
 #include "numerical_integration.hpp"
 #include "post_processing_rr.hpp"
 
+#include <timer.hpp>
 
 int main(int argc, char *argv[])
 {
+    // Benchmark timer 
+    Timer timer;
+
     // Axial and bending dofs
-    int nu = 1, nv = 4, nw = 4;
+    int nu = 1, nv = 2, nw = 2;
 
     // Input trajectory
     InputTrajectory input_traj;
@@ -33,11 +37,10 @@ int main(int argc, char *argv[])
     // Handle and beam system
     SystemRayleighRitz system_rayleigh_ritz(&handle, &needle, &input_traj);
 
-
     // /********************* Simulation ************************/ 
     // Initial beam deflection 
-    arma::dvec qf0 = arma::zeros<arma::dvec>(nu + nv + nw);
-    arma::dvec qf0_dot = arma::zeros<arma::dvec>(nu + nv + nw);
+    arma::dvec qf0 = arma::zeros<arma::dvec>(needle.get_elastic_dofs());
+    arma::dvec qf0_dot = arma::zeros<arma::dvec>(needle.get_elastic_dofs());
 
     // State vector initialization
     std::vector<arma::dvec> state_vector;
@@ -49,7 +52,7 @@ int main(int argc, char *argv[])
     std::vector<double> mx, my, mz;
 
     // Timing
-    double t_final = 5.0; // Final time (s)
+    double t_final = 3.0; // Final time (s)
     double fs = 1e3;  // Simulation frequency (Hz)
     double h = 1.0 / fs; // Integration time step (s)
     double t = 0; // Initial time (s) 
@@ -71,7 +74,7 @@ int main(int argc, char *argv[])
     while (t <= t_final)
     {
         // System solution 
-        arma::dvec x = ni.implicit_midpoint(t, state_vector.at(counter));
+        arma::dvec x = ni.implicit_euler(t, state_vector.at(counter));
         state_vector.push_back(x);
 
         if (!x.is_finite()) {
@@ -117,8 +120,11 @@ int main(int argc, char *argv[])
     arma::dmat t_my = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), my_vec);
     arma::dmat t_mz = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), mz_vec);
 
-    gp << "plot '-' with lines \n";
-    gp.send1d(t_my);
+
+    // gp << "set style line 1 lc rgb 'black' lw 1.5\n";
+    // gp << "unset key\n";
+    // gp << "plot '-' with lines ls 1 \n";
+    // gp.send1d(t_my);
 
 
     // Animation
@@ -164,4 +170,5 @@ int main(int argc, char *argv[])
         start = end;
     }
 
+    std::cin.get();
 }

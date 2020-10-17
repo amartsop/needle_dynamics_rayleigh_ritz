@@ -158,11 +158,12 @@ RayleighRitzBeam::RayleighRitzBeam(uint axial_dofs, uint bending_y_dofs, uint be
 
     // Calculate damping matrix (constant)
     damping_matrix_calculation(); 
+
 }
 
 
 // Update state 
-void RayleighRitzBeam::state_update(arma::dvec q, arma::dvec q_dot)
+void RayleighRitzBeam::state_update(const arma::dvec& q, const arma::dvec& q_dot)
 {
     // State
     m_roa_g_g = {q(0), q(1), q(2)};
@@ -177,7 +178,8 @@ void RayleighRitzBeam::state_update(arma::dvec q, arma::dvec q_dot)
 
 
 // Update beam equations
-void RayleighRitzBeam::update(double t, arma::dvec q, arma::dvec q_dot)
+void RayleighRitzBeam::update(double t, const arma::dvec& q,
+    const arma::dvec& q_dot)
 {
     // State update 
     state_update(q, q_dot);
@@ -200,7 +202,6 @@ void RayleighRitzBeam::update(double t, arma::dvec q, arma::dvec q_dot)
 
     // Update mass matrix 
     mass_matrix_calculation();
-
 
     // Update coriolis-centrifugal vector 
     coriolis_vector_calculation();
@@ -339,7 +340,7 @@ void RayleighRitzBeam::external_force_calculation(void)
 
         arma::dvec g1 = distributed_load(x);
         arma::dvec g2 = d_x(x) * distributed_load(x);
-        arma::dvec g3 = shape_function(x).t() * distributed_load(x);
+        arma::dvec g3 = shape_function_tilde(x).t() * distributed_load(x);
 
         if (i == 0 || i == grid_size - 1) {
             integral_qf1 += g1; integral_qf2 += g2; integral_qf3 += g3;
@@ -371,8 +372,8 @@ void RayleighRitzBeam::external_force_calculation(void)
         d_x(m_beam_length / 2.0) * m_rot_f_F.t() * m_weight_F);
 
     // Third term
-    m_qf3 = integral_qf3 + shape_function(m_beam_length).t() * fb_f + 
-        shape_function(m_beam_length / 2.0).t() * m_rot_f_F.t() * m_weight_F;
+    m_qf3 = integral_qf3 + shape_function_tilde(m_beam_length).t() * fb_f + 
+        shape_function_tilde(m_beam_length / 2.0).t() * m_rot_f_F.t() * m_weight_F;
     
     // Total force 
     m_qforce = arma::join_vert(qf1, qf2, m_qf3); 
@@ -382,14 +383,15 @@ void RayleighRitzBeam::external_force_calculation(void)
 // External force body frame (position l) FB(t, q, q_dot)
 arma::dvec RayleighRitzBeam::external_force(void)
 {
-
     // arma::dvec fb_F = {0.0, 0.0, 0.0};
     // arma::dvec fb_f = m_rot_f_F.t() * fb_F;
-    double fx = 1.0; 
+    double fx = 0.0; 
     double fy = 0.0;
-    double fz = 0.5;
+    double fz = 0.0;
 
-    if(m_time > 2.0) { fz = 0.0; }
+    if(m_time > 1.0) { fz = 0.5; }
+    if(m_time > 1.0) { fy = 0.5; }
+
         
     arma::dvec fb_f = {fx, fy, fz};
 
@@ -415,16 +417,17 @@ arma::dvec RayleighRitzBeam::distributed_load(double x)
 arma::dmat RayleighRitzBeam::d_x(double x)
 {
     // Central line distance 
-    arma::dvec rapoc_f_f = {x, 0.0, 0.0};
+    arma::dvec rap0_f_f_tilde = {x, 0.0, 0.0};
 
-    return dm::s(rapoc_f_f + shape_function(x) * m_qf);
+    return dm::s(rap0_f_f_tilde + shape_function_tilde(x) * m_qf);
 }
 
 
 // Get deflection with respect to f frame
-arma::dvec RayleighRitzBeam::get_deflection(double ksi, arma::dvec qf)
+arma::dvec RayleighRitzBeam::get_deflection(const arma::dvec& r_ap0_f_f,
+    const arma::dvec& qf)
 {
-    return shape_function(ksi * m_beam_length) * qf;
+    return shape_function(r_ap0_f_f) * qf;
 }
 
 
@@ -485,9 +488,15 @@ void RayleighRitzBeam::elastic_stiffness_matrix_calculation(void)
         m_lv_mat + m_lw_mat.t() * kw * m_lw_mat;
 }
 
-
 // Shape function 
-arma::dmat RayleighRitzBeam::shape_function(double x)
+arma::dmat RayleighRitzBeam::shape_function(const arma::dvec& x)
+{
+    return (shape_function_tilde(x(0)) + shape_function_breve(x));
+}
+
+
+// Shape function of neutral axis
+arma::dmat RayleighRitzBeam::shape_function_tilde(double x)
 {
     /****** Axial direction ******/
     arma::rowvec phiu = arma::zeros(1, m_axial_dofs);
@@ -521,18 +530,59 @@ arma::dmat RayleighRitzBeam::shape_function(double x)
             m_jwn(i) * (cos(gn * x) - cosh(gn * x)));
     }
 
-    // Shape function 
-    arma::dmat phi = arma::join_vert(phiu * m_lu_mat, phiv * m_lv_mat,
+    // Shape function neutral axis
+    arma::dmat phi_tilde = arma::join_vert(phiu * m_lu_mat, phiv * m_lv_mat,
         phiw * m_lw_mat);
 
-    return phi;
+    return phi_tilde;
 }
 
+// Shape function breve
+arma::dmat RayleighRitzBeam::shape_function_breve(const arma::dvec& x)
+{
+    /****** Bending y direction derivative ******/
+    arma::rowvec phiv_dot = arma::zeros(1, m_bending_y_dofs);
+    for (uint i = 0; i < m_bending_y_dofs; i++)
+    {
+        // Magnitude
+        double bn = m_beta_freq(i);
+
+        // Bending y shape function
+        phiv_dot(i) = m_v_hat(i) * bn * (cos(bn * x(0)) - cosh(bn * x(0)) +
+            m_jvn(i) * (-sin(bn * x(0)) - sinh(bn * x(0))));
+    }
+
+    /****** Bending z direction derivative ******/
+    arma::rowvec phiw_dot = arma::zeros(1, m_bending_z_dofs);
+    for (uint i = 0; i < m_bending_z_dofs; i++)
+    {
+        // Magnitude
+        double gn = m_gamma_freq(i);
+
+        // Bending z shape function
+        phiw_dot(i) = m_w_hat(i) * gn * (cos(gn * x(0)) - cosh(gn * x(0)) +
+            m_jwn(i) * (-sin(gn * x(0)) - sinh(gn * x(0))));
+    }
+
+    // First component 
+    arma::dmat phi1_breve = - x(1) * phiv_dot * m_lv_mat -
+        x(2) * phiw_dot * m_lw_mat;
+
+    // Second component 
+    arma::dmat phi2_breve = arma::zeros(1, m_elastic_dofs);
+
+    // Third component 
+    arma::dmat phi3_breve = arma::zeros(1, m_elastic_dofs);
+
+    // Shape function breve 
+    arma::dmat phi_breve = arma::join_vert(phi1_breve, phi2_breve, phi3_breve);
+
+    return phi_breve;
+}
 
 // N integrals calculation
 void RayleighRitzBeam::n_integrals(void)
 {
-
     /*************** Integral N1 ***************/
     arma::dmat phi_u_int = arma::zeros(1, m_axial_dofs);
     for (int i = 0; i < m_axial_dofs; i++)

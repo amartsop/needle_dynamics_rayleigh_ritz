@@ -13,12 +13,12 @@ SystemRayleighRitz::SystemRayleighRitz(Handle *handle, RayleighRitzBeam *needle,
     // Input coordinates 
     m_input_traj_ptr = input_traj;
 
-    // Number of dofs
-    m_dofs = needle->get_elastic_dofs();
+    // Number of elastic dofs
+    m_elastic_dofs = needle->get_elastic_dofs();
 }
 
 
-arma::dvec SystemRayleighRitz::f(double t, arma::dvec state_vector)
+arma::dvec SystemRayleighRitz::f(double t, const arma::dvec& state_vector)
 {
     // Update rigid body trajectory
     m_input_traj_ptr->update(t);
@@ -59,13 +59,13 @@ arma::dvec SystemRayleighRitz::f(double t, arma::dvec state_vector)
     // Displacement
     arma::dvec roa_F_F = roc_F_F + rot_f_F * rca_f_f;
     arma::dvec theta_f = theta_r;
-    arma::dvec qf = state_vector.rows(0, m_dofs - 1);
+    arma::dvec qf = state_vector.rows(0, m_elastic_dofs - 1);
     arma::dvec q = arma::join_vert(roa_F_F, theta_f, qf);
 
     // Velocity
     arma::dvec roa_dot_F_F = roc_dot_F_F - rot_f_F * dm::s(rca_f_f) * omega;
     arma::dvec theta_dot_f = theta_dot_r;
-    arma::dvec qf_dot = state_vector.rows(m_dofs, 2 * m_dofs - 1);
+    arma::dvec qf_dot = state_vector.rows(m_elastic_dofs, 2 * m_elastic_dofs - 1);
     arma::dvec q_dot = arma::join_vert(roa_dot_F_F, theta_dot_f, qf_dot);
 
     // Update flexible body matrices 
@@ -94,7 +94,6 @@ arma::dvec SystemRayleighRitz::f(double t, arma::dvec state_vector)
     // Calculate tau3
     arma::dvec tau3 = fvf3 + qf3 - mf31 * roa_ddot_F_F - mf32 * theta_ddot_f;
 
-
     // Calculate elastic acceleration
     arma::dvec qf_ddot = arma::solve(mf33, tau3 - cf33 * qf_dot - kf33 * qf);
 
@@ -106,7 +105,7 @@ arma::dvec SystemRayleighRitz::f(double t, arma::dvec state_vector)
     arma::dmat cf = m_needle_ptr->get_damping_matrix();
     arma::dmat kf = m_needle_ptr->get_stiffness_matrix();
     arma::dvec fvf = m_needle_ptr->get_coriolis_vector();
-    arma::dvec qforce = m_needle_ptr->get_external_force();
+    arma::dvec qforce = m_needle_ptr->get_external_force_vector();
 
     // Total reaction force
     arma::dvec reaction_force = mf * q_ddot + cf * q_dot + kf * q - fvf - qforce;
@@ -134,9 +133,9 @@ arma::dvec SystemRayleighRitz::f(double t, arma::dvec state_vector)
     return arma::join_vert(qf_dot, qf_ddot);
 }
 
-arma::dmat SystemRayleighRitz::dfdx(double t, arma::dvec x)
+// Numerical estimation of system's jacobian
+arma::dmat SystemRayleighRitz::dfdx(double t, const arma::dvec& x)
 {
-
     arma::dvec fx = f(t, x); arma::dvec x_pert = x;
     arma::dmat jacobian = arma::zeros(fx.n_rows, x.n_rows);
 

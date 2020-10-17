@@ -35,7 +35,7 @@ arma::dmat EulerRotations::rotation(double phi, double theta, double psi)
     return (rotz * roty * rotx);
 }
 
-arma::dmat EulerRotations::rotation(arma::dvec euler_angles)
+arma::dmat EulerRotations::rotation(const arma::dvec& euler_angles)
 {
     return rotation(euler_angles(0), euler_angles(1), euler_angles(2));
 }
@@ -48,14 +48,14 @@ arma::dmat EulerRotations::G(double phi, double theta, double psi)
         {0.0, -sin(phi), cos(phi) * cos(theta)}};
 }
 
-arma::dmat EulerRotations::G(arma::dvec euler_angles)
+arma::dmat EulerRotations::G(const arma::dvec& euler_angles)
 {
     return G(euler_angles(0), euler_angles(1), euler_angles(2));
 }
 
 
-arma::dmat EulerRotations::G_dot(arma::dvec euler_angles, arma::dvec 
-    euler_angles_dot)
+arma::dmat EulerRotations::G_dot(const arma::dvec& euler_angles,
+    const arma::dvec& euler_angles_dot)
 {
     double phi = arma::as_scalar(euler_angles(0));
     double theta = arma::as_scalar(euler_angles(1));

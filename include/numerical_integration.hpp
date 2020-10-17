@@ -14,27 +14,27 @@ public:
 
     /************************** Explicit Methods *************************/
     // Runge-Kutta family
-    arma::dvec explicit_euler(double t, arma::dvec state);
-    arma::dvec explicit_midpoint(double t, arma::dvec state);
-    arma::dvec explicit_trapezoid(double t, arma::dvec state);
-    arma::dvec runge_kutta_3(double t, arma::dvec state);
-    arma::dvec runge_kutta_4(double t, arma::dvec state);
-    arma::dvec runge_kutta_5(double t, arma::dvec state);
+    arma::dvec explicit_euler(double t, const arma::dvec& state);
+    arma::dvec explicit_midpoint(double t, const arma::dvec& state);
+    arma::dvec explicit_trapezoid(double t, const arma::dvec& state);
+    arma::dvec runge_kutta_3(double t, const arma::dvec& state);
+    arma::dvec runge_kutta_4(double t, const arma::dvec& state);
+    arma::dvec runge_kutta_5(double t, const arma::dvec& state);
 
     // Adams-Bashforth family
-    arma::dvec adams_bashforth_2(double t, arma::dvec state);
-    arma::dvec adams_bashforth_4(double t, arma::dvec state);
+    arma::dvec adams_bashforth_2(double t, const arma::dvec& state);
+    arma::dvec adams_bashforth_4(double t, const arma::dvec& state);
     
     // Predictor-Correctors
-    arma::dvec predictor_corrector_2(double t, arma::dvec state);
-    arma::dvec predictor_corrector_4(double t, arma::dvec state);
+    arma::dvec predictor_corrector_2(double t, const arma::dvec& state);
+    arma::dvec predictor_corrector_4(double t, const arma::dvec& state);
 
     /************************** Implicit Methods *************************/
-    arma::dvec implicit_euler(double t, arma::dvec state);
-    arma::dvec implicit_midpoint(double t, arma::dvec state);
-    arma::dvec implicit_trapezoid(double t, arma::dvec state);
-    arma::dvec implicit_runge_kutta_2(double t, arma::dvec state);
-    arma::dvec implicit_runge_kutta_4(double t, arma::dvec state);
+    arma::dvec implicit_euler(double t, const arma::dvec& state);
+    arma::dvec implicit_midpoint(double t, const arma::dvec& state);
+    arma::dvec implicit_trapezoid(double t, const arma::dvec& state);
+    arma::dvec implicit_runge_kutta_2(double t, const arma::dvec& state);
+    arma::dvec implicit_runge_kutta_4(double t, const arma::dvec& state);
 
 private:
 
@@ -80,8 +80,9 @@ private:
     const arma::dvec e_runge5_c = {0.0, 1.0 / 4.0, 3.0 / 8.0, 12.0 / 13.0,
         1.0, 1.0 / 2.0};
 
-    arma::dvec generic_explicit_runge_kutta(double t, arma::dvec state,
-        arma::dmat coef_a, arma::dvec coef_b, arma::dvec coef_c);
+    arma::dvec generic_explicit_runge_kutta(double t, const arma::dvec& state,
+        const arma::dmat& coef_a, const arma::dvec& coef_b,
+        const arma::dvec& coef_c);
 
     /************************** Implicit Methods *************************/
     // Implicit (Backward) Euler
@@ -112,8 +113,9 @@ private:
     const arma::dvec i_runge4_b = {3.0 / 2.0, - 3.0 / 2.0, 1.0 / 2.0, 1.0 / 2.0};
     const arma::dvec i_runge4_c = {3.0 / 2.0, - 3.0 / 2.0, 1.0 / 2.0, 1.0 / 2.0};
 
-    arma::dvec generic_implicit_runge_kutta(double t, arma::dvec state,
-        arma::dmat coef_a, arma::dvec coef_b, arma::dvec coef_c);
+    arma::dvec generic_implicit_runge_kutta(double t, const arma::dvec& state,
+        const arma::dmat& coef_a, const arma::dvec& coef_b,
+        const arma::dvec& coef_c);
 
 private:
 
@@ -155,7 +157,8 @@ NumericalIntegration<T>::NumericalIntegration(T *model, double integration_step,
 
 // Euler method
 template <class T>
-arma::dvec NumericalIntegration<T>::explicit_euler(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::explicit_euler(double t,
+    const arma::dvec& state)
 {   
     return generic_explicit_runge_kutta(t, state, e_euler_a, e_euler_b,
         e_euler_c);
@@ -163,7 +166,8 @@ arma::dvec NumericalIntegration<T>::explicit_euler(double t, arma::dvec state)
 
 // Explicit midpoint method
 template <class T>
-arma::dvec NumericalIntegration<T>::explicit_midpoint(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::explicit_midpoint(double t,
+    const arma::dvec& state)
 {   
     return generic_explicit_runge_kutta(t, state, e_midpoint_a, e_midpoint_b,
         e_midpoint_c);
@@ -171,7 +175,8 @@ arma::dvec NumericalIntegration<T>::explicit_midpoint(double t, arma::dvec state
 
 // Explicit trapezoid method
 template <class T>
-arma::dvec NumericalIntegration<T>::explicit_trapezoid(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::explicit_trapezoid(double t,
+    const arma::dvec& state)
 {   
     return generic_explicit_runge_kutta(t, state, e_trapezoid_a, e_trapezoid_b,
         e_trapezoid_c);
@@ -179,7 +184,8 @@ arma::dvec NumericalIntegration<T>::explicit_trapezoid(double t, arma::dvec stat
 
 // Third order Runge-Kutta
 template <class T>
-arma::dvec NumericalIntegration<T>::runge_kutta_3(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::runge_kutta_3(double t,
+    const arma::dvec& state)
 {   
     return generic_explicit_runge_kutta(t, state, e_runge3_a, e_runge3_b,
         e_runge3_c);
@@ -187,7 +193,8 @@ arma::dvec NumericalIntegration<T>::runge_kutta_3(double t, arma::dvec state)
 
 // Fourth order Runge-Kutta
 template <class T>
-arma::dvec NumericalIntegration<T>::runge_kutta_4(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::runge_kutta_4(double t, 
+const arma::dvec& state)
 {   
     return generic_explicit_runge_kutta(t, state, e_runge4_a, e_runge4_b,
         e_runge4_c);
@@ -195,7 +202,8 @@ arma::dvec NumericalIntegration<T>::runge_kutta_4(double t, arma::dvec state)
 
 // Fifth order Runge-Kutta
 template <class T>
-arma::dvec NumericalIntegration<T>::runge_kutta_5(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::runge_kutta_5(double t,
+    const arma::dvec& state)
 {   
     return generic_explicit_runge_kutta(t, state, e_runge5_a, e_runge5_b,
         e_runge5_c);
@@ -204,7 +212,8 @@ arma::dvec NumericalIntegration<T>::runge_kutta_5(double t, arma::dvec state)
 // Generic explicit Runge-Kutta
 template <class T>
 arma::dvec NumericalIntegration<T>::generic_explicit_runge_kutta(double t,
-    arma::dvec state, arma::dmat coef_a, arma::dvec coef_b, arma::dvec coef_c)
+    const arma::dvec& state, const arma::dmat& coef_a,
+    const arma::dvec& coef_b, const arma::dvec& coef_c)
 {
     arma::dvec biki_sum = arma::zeros(state.n_rows);
     uint s = coef_b.n_rows; arma::dvec ki_vec[s];
@@ -232,7 +241,8 @@ arma::dvec NumericalIntegration<T>::generic_explicit_runge_kutta(double t,
 
 // Implicit Euler method
 template <class T>
-arma::dvec NumericalIntegration<T>::implicit_euler(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::implicit_euler(double t,
+    const arma::dvec& state)
 {   
     return generic_implicit_runge_kutta(t, state, i_euler_a, i_euler_b,
         i_euler_c);
@@ -241,7 +251,8 @@ arma::dvec NumericalIntegration<T>::implicit_euler(double t, arma::dvec state)
 
 // Implicit midpoint method
 template <class T>
-arma::dvec NumericalIntegration<T>::implicit_midpoint(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::implicit_midpoint(double t,
+    const arma::dvec& state)
 {   
     return generic_implicit_runge_kutta(t, state, i_midpoint_a, i_midpoint_b,
         i_midpoint_c);
@@ -250,7 +261,8 @@ arma::dvec NumericalIntegration<T>::implicit_midpoint(double t, arma::dvec state
 
 // Implicit trapezoid method
 template <class T>
-arma::dvec NumericalIntegration<T>::implicit_trapezoid(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::implicit_trapezoid(double t,
+    const arma::dvec& state)
 {   
     return generic_implicit_runge_kutta(t, state, i_trapezoid_a, i_trapezoid_b,
         i_trapezoid_c);
@@ -258,7 +270,8 @@ arma::dvec NumericalIntegration<T>::implicit_trapezoid(double t, arma::dvec stat
 
 // Implicit third order Runge-Kutta
 template <class T>
-arma::dvec NumericalIntegration<T>::implicit_runge_kutta_2(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::implicit_runge_kutta_2(double t,
+    const arma::dvec& state)
 {   
     return generic_implicit_runge_kutta(t, state, i_runge2_a, i_runge2_b,
         i_runge2_c);
@@ -266,7 +279,8 @@ arma::dvec NumericalIntegration<T>::implicit_runge_kutta_2(double t, arma::dvec 
 
 // Implicit fourth order Runge-Kutta
 template <class T>
-arma::dvec NumericalIntegration<T>::implicit_runge_kutta_4(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::implicit_runge_kutta_4(double t,
+    const arma::dvec& state)
 {   
     return generic_implicit_runge_kutta(t, state, i_runge4_a, i_runge4_b,
         i_runge4_c);
@@ -275,7 +289,8 @@ arma::dvec NumericalIntegration<T>::implicit_runge_kutta_4(double t, arma::dvec 
 // Generic (diagonal) implicit Runge-Kutta
 template <class T>
 arma::dvec NumericalIntegration<T>::generic_implicit_runge_kutta(double t,
-    arma::dvec state, arma::dmat coef_a, arma::dvec coef_b, arma::dvec coef_c)
+    const arma::dvec& state, const arma::dmat& coef_a,
+    const arma::dvec& coef_b, const arma::dvec& coef_c)
 {
     arma::dvec biki_sum = arma::zeros(state.n_rows);
     uint s = coef_b.n_rows; arma::dvec ki_vec[s];
@@ -333,37 +348,10 @@ arma::dvec NumericalIntegration<T>::generic_implicit_runge_kutta(double t,
     return (state + m_integration_step * biki_sum);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //************************* Predictor-Correctors ****************************//
 template <class T>
 arma::dvec NumericalIntegration<T>::predictor_corrector_2(double t,
-    arma::dvec state)
+    const arma::dvec& state)
 {
     // Predictor
     arma::dvec x_predict = adams_bashforth_2(t, state);
@@ -379,7 +367,7 @@ arma::dvec NumericalIntegration<T>::predictor_corrector_2(double t,
  
 template <class T>
 arma::dvec NumericalIntegration<T>::predictor_corrector_4(double t, 
-    arma::dvec state)
+    const arma::dvec& state)
 {
     arma::dvec x_predict = adams_bashforth_4(t, state);
     double t_predict = t + m_integration_step;
@@ -407,7 +395,8 @@ arma::dvec NumericalIntegration<T>::predictor_corrector_4(double t,
 
 //************************* Adams-Bushforth Methods ****************************//
 template <class T>
-arma::dvec NumericalIntegration<T>::adams_bashforth_2(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::adams_bashforth_2(double t,
+    const arma::dvec& state)
 {
     arma::dvec output;
 
@@ -435,7 +424,8 @@ arma::dvec NumericalIntegration<T>::adams_bashforth_2(double t, arma::dvec state
 }
 
 template <class T>
-arma::dvec NumericalIntegration<T>::adams_bashforth_4(double t, arma::dvec state)
+arma::dvec NumericalIntegration<T>::adams_bashforth_4(double t,
+    const arma::dvec& state)
 {
     arma::dvec output;
 

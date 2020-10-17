@@ -12,14 +12,14 @@ public:
     void update(double t);
 
     // Get linear, position, acceleration 
-    arma::dvec get_linear_displacement(void) { return m_roc; }
-    arma::dvec get_linear_velocity(void){ return m_roc_dot; }
-    arma::dvec get_linear_acceleration(void) {  return m_roc_ddot; }
+    arma::dvec get_linear_displacement(void) const { return m_roc; }
+    arma::dvec get_linear_velocity(void) const { return m_roc_dot; }
+    arma::dvec get_linear_acceleration(void) const {  return m_roc_ddot; }
 
     // Get rotational position, acceleration 
-    arma::dvec get_rotational_displacement(void) { return m_theta; }
-    arma::dvec get_rotational_velocity(void){ return m_theta_dot; }
-    arma::dvec get_rotational_acceleration(void) {  return m_theta_ddot; }
+    arma::dvec get_rotational_displacement(void) const { return m_theta; }
+    arma::dvec get_rotational_velocity(void) const { return m_theta_dot; }
+    arma::dvec get_rotational_acceleration(void) const { return m_theta_ddot; }
 
 private:
 

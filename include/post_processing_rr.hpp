@@ -59,21 +59,19 @@ arma::dmat PostProcessingRR<T>::get_beam_coordinates_ffr(arma::dmat elastic_coor
 
     for (int i = 0; i < npel; i++) 
     { 
-        // Dimensionless length
-        double ksi = x_vec(i) / m_beam_length;
-
         // Position of point p0 wrt to f
-        arma::dvec rap0_f_f = {x_vec(i), 0.0, 0.0};
+        arma::dvec rap0_f_f_tilde = {x_vec(i), 0.0, 0.0};
 
         // Deformation of point p
-        arma::dvec rp0p_f_f = m_needle_ptr->get_deflection(ksi, elastic_coordinates);
+        arma::dvec rp0p_f_f_tilde = m_needle_ptr->get_deflection(rap0_f_f_tilde,
+            elastic_coordinates);
 
         // Final position of pj wrt to f origin
-        arma::dvec rap_f_f = rap0_f_f + rp0p_f_f;
+        arma::dvec rap_f_f_tilde = rap0_f_f_tilde + rp0p_f_f_tilde;
 
-        m_beam_points_x.push_back(rap_f_f(0));
-        m_beam_points_y.push_back(rap_f_f(1));
-        m_beam_points_z.push_back(rap_f_f(2));
+        m_beam_points_x.push_back(rap_f_f_tilde(0));
+        m_beam_points_y.push_back(rap_f_f_tilde(1));
+        m_beam_points_z.push_back(rap_f_f_tilde(2));
     }
 
     // Armadillo matrices of beam elements 
@@ -102,20 +100,18 @@ arma::dmat PostProcessingRR<T>::get_beam_coordinates_inertial(arma::dvec roa_g_g
 
     for (int i = 0; i < npel; i++) 
     { 
-        // Dimensionless length
-        double ksi = x_vec(i) / m_beam_length;
-
         // Position of point p0 wrt to f
-        arma::dvec rap0_f_f = {x_vec(i), 0.0, 0.0};
+        arma::dvec rap0_f_f_tilde = {x_vec(i), 0.0, 0.0};
 
         // Deformation of point p
-        arma::dvec rp0p_f_f = m_needle_ptr->get_deflection(ksi, elastic_coordinates);
+        arma::dvec rp0p_f_f_tilde = m_needle_ptr->get_deflection(rap0_f_f_tilde,
+            elastic_coordinates);
 
         // Final position of pj wrt to f origin
-        arma::dvec rap_f_f = rap0_f_f + rp0p_f_f;
+        arma::dvec rap_f_f_tilde = rap0_f_f_tilde + rp0p_f_f_tilde;
 
         // Final position of pj wrt to G origin 
-        arma::dvec rop_g_g = roa_g_g + rot_f_g *  rap_f_f;
+        arma::dvec rop_g_g = roa_g_g + rot_f_g *  rap_f_f_tilde;
 
         // Final position of pj wrt to f origin
         m_beam_points_x.push_back(rop_g_g(0));

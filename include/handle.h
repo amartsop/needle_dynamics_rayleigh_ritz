@@ -13,6 +13,9 @@ class Handle : public NeedleProperties
 public:
     Handle();
 
+    // Update rigid body matrices and coriolis vector
+    void update(double t, const arma::dvec& q, const arma::dvec& q_dot);
+
     // Mass matrix getter
     arma::dmat get_mass_matrix(void){ return m_mass; }
     
@@ -30,9 +33,6 @@ public:
 
     // Get g_dot matrix 
     arma::dmat get_g_dot_matrix(void) { return m_g_dot_mat; }
-
-    // Update rigid body matrices and coriolis vector
-    void update(double t, arma::dvec q, arma::dvec q_dot);
 
     // Get total handle dofs 
     uint get_handle_dofs(void) { return m_dofs; }
@@ -97,7 +97,7 @@ private:
 
 private:
     // State update 
-    void state_update(arma::dvec q, arma::dvec q_dot);
+    void state_update(const arma::dvec& q, const arma::dvec& q_dot);
 
     // Mass matrix calculation
     void mass_matrix_calculation(void); 

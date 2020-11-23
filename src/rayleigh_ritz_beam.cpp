@@ -159,6 +159,9 @@ RayleighRitzBeam::RayleighRitzBeam(uint axial_dofs, uint bending_y_dofs, uint be
     // Calculate damping matrix (constant)
     damping_matrix_calculation(); 
 
+    std::cout << m_v_freq(0) << std::endl;
+    std::cout << m_v_freq(1) << std::endl;
+
 }
 
 
@@ -374,7 +377,7 @@ void RayleighRitzBeam::external_force_calculation(void)
     // Third term
     m_qf3 = integral_qf3 + shape_function_tilde(m_beam_length).t() * fb_f + 
         shape_function_tilde(m_beam_length / 2.0).t() * m_rot_f_F.t() * m_weight_F;
-    
+
     // Total force 
     m_qforce = arma::join_vert(qf1, qf2, m_qf3); 
 }
@@ -383,16 +386,14 @@ void RayleighRitzBeam::external_force_calculation(void)
 // External force body frame (position l) FB(t, q, q_dot)
 arma::dvec RayleighRitzBeam::external_force(void)
 {
-    // arma::dvec fb_F = {0.0, 0.0, 0.0};
-    // arma::dvec fb_f = m_rot_f_F.t() * fb_F;
     double fx = 0.0; 
     double fy = 0.0;
-    double fz = 0.0;
+    double fz = 0.5;
 
-    if(m_time > 1.0) { fz = 0.5; }
-    if(m_time > 1.0) { fy = 0.5; }
-
-        
+    if(m_time > 2.0)
+    {
+        fz = 0.0;
+    }
     arma::dvec fb_f = {fx, fy, fz};
 
    return fb_f;

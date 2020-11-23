@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+c7a67b0d29ef746a91a01a947eb0c332 libs/animation/libs/glfw-3.1.2/CMakeFiles/uninstall
+013ddd21671efc4259cee1befad85010 libs/animation/libs/glfw-3.1.2/docs/CMakeFiles/docs

@@ -1,27 +1,22 @@
+#include <cstdlib>
 #include <iostream>
 #include <armadillo>
+#include <ostream>
 #include <vector>
 #include <chrono>
 #include <thread>
 
-#include "gnuplot-iostream.h"
-#include "modes_magnitude.h"
-#include "input_trajectory.h"
-#include "handle.h"
-#include "rayleigh_ritz_beam.h"
-#include "system_rayleigh_ritz.h"
+#include <modes_magnitude.h>
+#include <input_trajectory.h>
+#include <handle.h>
+#include <rayleigh_ritz_beam.h>
+#include <system_rayleigh_ritz.h>
+#include <numerical_integration.hpp>
 
-#include "needle_animation.hpp"
-#include "numerical_integration.hpp"
-#include "post_processing_rr.hpp"
-
-#include <timer.hpp>
+#include <animation.h>
 
 int main(int argc, char *argv[])
 {
-    // Benchmark timer 
-    Timer timer;
-
     // Axial and bending dofs
     int nu = 1, nv = 2, nw = 2;
 
@@ -36,7 +31,7 @@ int main(int argc, char *argv[])
 
     // Handle and beam system
     SystemRayleighRitz system_rayleigh_ritz(&handle, &needle, &input_traj);
-
+    
     // /********************* Simulation ************************/ 
     // Initial beam deflection 
     arma::dvec qf0 = arma::zeros<arma::dvec>(needle.get_elastic_dofs());
@@ -47,12 +42,8 @@ int main(int argc, char *argv[])
     arma::dvec state0 = arma::join_vert(qf0, qf0_dot);
     state_vector.push_back(state0);
 
-    // Reaction forces and moments
-    std::vector<double> fx, fy, fz;
-    std::vector<double> mx, my, mz;
-
     // Timing
-    double t_final = 3.0; // Final time (s)
+    double t_final = 10.0; // Final time (s)
     double fs = 1e3;  // Simulation frequency (Hz)
     double h = 1.0 / fs; // Integration time step (s)
     double t = 0; // Initial time (s) 
@@ -61,36 +52,20 @@ int main(int argc, char *argv[])
     std::vector<double> time_vector;
     time_vector.push_back(t);
 
-    // Post processing 
-    PostProcessingRR<RayleighRitzBeam> post_processing_rr(&needle);
-
     // Problem solver 
     NumericalIntegration<SystemRayleighRitz> ni(&system_rayleigh_ritz, h,
         state0.n_rows);
 
     // Iteration counter 
-    uint counter = 0;
-
+    unsigned int counter = 0;
+	
     while (t <= t_final)
     {
         // System solution 
         arma::dvec x = ni.implicit_euler(t, state_vector.at(counter));
         state_vector.push_back(x);
 
-        if (!x.is_finite()) {
-            std::cout << "Error" << std::endl; 
-            break; 
-        };
-
-        // Reaction forces 
-        arma::dvec reaction_forces = - system_rayleigh_ritz.get_reaction_forces();
-        fx.push_back(reaction_forces(0)); fy.push_back(reaction_forces(1));
-        fz.push_back(reaction_forces(2));
-
-        // Reaction moment
-        arma::dvec reaction_moment = - system_rayleigh_ritz.get_reaction_moment();
-        mx.push_back(reaction_moment(0)); my.push_back(reaction_moment(1));
-        mz.push_back(reaction_moment(2));
+        if (!x.is_finite()) { std::cout << "Error" << std::endl; break; };
 
         // Update time vector 
         time_vector.push_back(t);
@@ -101,74 +76,83 @@ int main(int argc, char *argv[])
         std::cout << t << std::endl;
     }
 
-    // Plot reaction forces 
-    Gnuplot gp;
-    arma::dvec t_vec(time_vector);
-    arma::dvec fx_vec(fx);
-    arma::dvec fy_vec(fy);
-    arma::dvec fz_vec(fz);
-
-    arma::dvec mx_vec(mx);
-    arma::dvec my_vec(my);
-    arma::dvec mz_vec(mz);
-
-    arma::dmat t_fx = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), fx_vec);
-    arma::dmat t_fy = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), fy_vec);
-    arma::dmat t_fz = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), fz_vec);
-
-    arma::dmat t_mx = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), mx_vec);
-    arma::dmat t_my = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), my_vec);
-    arma::dmat t_mz = arma::join_horiz(t_vec.rows(0, t_vec.n_rows - 2), mz_vec);
-
-
-    // gp << "set style line 1 lc rgb 'black' lw 1.5\n";
-    // gp << "unset key\n";
-    // gp << "plot '-' with lines ls 1 \n";
-    // gp.send1d(t_my);
-
-
     // Animation
-    NeedleAnimation needle_animation(&needle, &post_processing_rr);
+    Animation animation;
     double animation_frequency = 30; // (Hz) Frames per sec
     double animation_period_sec = 1 / animation_frequency; // (s)
     uint animation_period =  1000 * animation_period_sec; // (ms)
     uint steps = fs / animation_frequency;
 
     // Clock
-    auto start = std::chrono::steady_clock::now();
+    auto start_time = std::chrono::steady_clock::now();
     double real_time = 0;
 
-    for(size_t i = 0; i <= time_vector.size(); i = i + steps)
+    // Needle vertices
+    auto needle_vert = animation.getNeedleVerticesPos();
+    std::vector<glm::vec3> needle_vert_new; needle_vert_new.resize(needle_vert.size());
+
+    // State counter 
+    size_t state_counter = 0;
+
+    /*********************** Render Loop ***********************/
+    for(;;)
     {
-        auto end = std::chrono::steady_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end-start;
+        // Break animation
+        if(animation.isDone()) { break; }
+
+        // Time tracking
+        auto last_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double> elapsed_seconds = last_time - start_time;
 
         // Current state and time 
-        arma::dvec x_current = state_vector.at(i);
-        double t_current = time_vector.at(i);
+        arma::dvec x_current = state_vector.at(state_counter);
+        double t_current = time_vector.at(state_counter);
 
+        /******************** Update handle pose ********************/
         // Known coordinates 
         input_traj.update(t_current);
 
         // Rigid body position and orientation
-        arma::dvec roa_F_F = input_traj.get_linear_displacement();
-        arma::dvec euler_angles = input_traj.get_rotational_displacement();
+        arma::dvec roa_F_F = {0.0f, 0.0f, 0.0f};
+        arma::dvec euler_angles = {0.0f, 0.0f, 0.0f};
 
+        /******************** Update needle pose and shape ********************/
         // Elastic coordinates
         arma::dvec qf = x_current.rows(0, needle.get_elastic_dofs() - 1);
 
-        // Animation
-        needle_animation.animate(roa_F_F, euler_angles, qf);
+        // Reset needle vertices
+        for (unsigned int i = 0; i < needle_vert.size(); i++)
+        {
+            glm::vec3 needle_vert_i = needle_vert.at(i);
+
+            arma::dvec r_ap0_f_f = {needle_vert_i.x, needle_vert_i.y,
+                needle_vert_i.z};
+
+            arma::dvec defl = needle.get_deflection(r_ap0_f_f, qf);
+
+            arma::dvec total_defl = r_ap0_f_f + defl;
+
+            needle_vert_new.at(i) = glm::vec3(total_defl(0), total_defl(1),
+                total_defl(2));
+        }
+        animation.setNeedleVerticesPos(needle_vert_new);
+
+        // Render animation 
+        animation.update(elapsed_seconds.count());
 
         // Delay
         std::this_thread::sleep_for(std::chrono::milliseconds(animation_period));
 
-        // Calculate Real time
-        double real_time = real_time + elapsed_seconds.count();
+        // Update time 
+        start_time = last_time;
 
-        // Update time
-        start = end;
+        // Update state counter 
+        if (state_counter < state_vector.size() - 1) { state_counter += steps ; }
+        else { break;}
     }
-
-    std::cin.get();
 }
+    
+
+
+
+

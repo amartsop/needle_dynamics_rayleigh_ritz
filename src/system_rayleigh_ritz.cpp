@@ -52,8 +52,9 @@ arma::dvec SystemRayleighRitz::f(double t, const arma::dvec& state_vector)
     // Distance between frames 
     arma::dvec rca_f_f = m_handle_ptr->get_rca_f_f();
 
-    // Omega 
+    // Omega and omega dot
     arma::dvec omega = g_mat * theta_dot_r;
+    arma::dvec omega_dot = g_mat * theta_ddot_r + g_dot_mat * theta_dot_r;
 
     /***************** Flexible body state ***********************/
     // Displacement
@@ -87,7 +88,7 @@ arma::dvec SystemRayleighRitz::f(double t, const arma::dvec& state_vector)
     arma::dvec qf3 = m_needle_ptr->get_qf3_vector();
 
     // Acceleration
-    arma::dvec roa_ddot_F_F = roc_ddot_F_F + rot_f_F * (dm::s(omega) + 
+    arma::dvec roa_ddot_F_F = roc_ddot_F_F + rot_f_F * (dm::s(omega_dot) + 
         dm::s(omega) * dm::s(omega)) * rca_f_f;
     arma::dvec theta_ddot_f = theta_ddot_r;
 
@@ -126,7 +127,7 @@ arma::dvec SystemRayleighRitz::f(double t, const arma::dvec& state_vector)
 
     // Reaction moment at point c
     m_mc_f = ic_f * (g_dot_mat * theta_r + g_mat * theta_ddot_r) - ma_f -
-        dm::s(m_handle_ptr->get_rca_f_f()) * rot_f_F.t() * fa_F -
+        dm::s(m_handle_ptr->get_rca_f_f()) * rot_f_F.t() * fa_F +
         dm::s(omega) * ic_f * omega;
 
 
